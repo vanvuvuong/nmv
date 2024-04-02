@@ -1,3 +1,4 @@
 encryptionsalt: v1:D0WYAK6wy5c=:v1:++21r1bgcDSQr6Kb:OI5PtZVw1MiLTMHCm5bdSopeJlTzPQ==
 config:
+  aws:profile: dongtd
   aws:region: ap-northeast-1
