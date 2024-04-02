@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2transitgateway"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -17,29 +18,21 @@ func main() {
 			return err
 		}
 
-		subnet, err := ec2.NewSubnet(ctx, "private", &ec2.SubnetArgs{
+		subnet, err := ec2.NewSubnet(ctx, "public", &ec2.SubnetArgs{
 			VpcId:               vpc.ID(),
-			CidrBlock:           pulumi.String("10.0.128.0/20"),
+			CidrBlock:           pulumi.String("10.0.144.0/20"),
 			MapPublicIpOnLaunch: pulumi.Bool(true),
 			AvailabilityZone:    pulumi.String("ap-northeast-1a"),
 			Tags: pulumi.StringMap{
-				"Name": pulumi.String("private"),
+				"Name": pulumi.String("public"),
 			},
 		})
 		if err != nil {
 			return err
 		}
 
-		igw, err := ec2.NewInternetGateway(ctx, "igw", &ec2.InternetGatewayArgs{
+		_, err = ec2.NewInternetGateway(ctx, "igw", &ec2.InternetGatewayArgs{
 			VpcId: vpc.ID(),
-		})
-		if err != nil {
-			return err
-		}
-
-		_, err = ec2.NewInternetGatewayAttachment(ctx, "igw_att", &ec2.InternetGatewayAttachmentArgs{
-			VpcId:             vpc.ID(),
-			InternetGatewayId: igw.ID(),
 		})
 		if err != nil {
 			return err
@@ -105,6 +98,16 @@ func main() {
 		if err != nil {
 			return err
 		}
+
+		_, err = ec2transitgateway.NewVpcAttachment(ctx, "natvpc", &ec2transitgateway.VpcAttachmentArgs{
+			VpcId:            vpc.ID(),
+			TransitGatewayId: pulumi.String("tgw-0b72494660357e2b6"),
+			SubnetIds:        pulumi.StringArray{subnet.ID()},
+		})
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 }
